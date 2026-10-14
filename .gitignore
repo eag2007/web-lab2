@@ -22,7 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-package-lock.json
+frontend/package-lock.json
 .prettierrc
 
 test_design.html
@@ -79,3 +79,4 @@ backend/backend.iml
 backend/build/
 backend/.idea/
 backend/*.iml
+.idea
