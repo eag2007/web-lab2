@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="author" content="Гунько Евгений Алексеевич">
+    <meta name="description" content="Веб-программирование: Лабораторная работа №1.">
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="shortcut icon" href="/public/mogged-hard-prime.png">
+    <title>solution-1</title>
+</head>
+
+<body>
+
+<header>
+    <nav>
+        <div class="profile">
+            <img src="public/github.jpeg" alt="Фотография профиля github eag2007" id="photo">
+            <div class="profile-text">
+                <h1>Гунько Евгений Алексеевич</h1>
+                <div class="profile-description">
+                    <h3>ИСУ: 502010 · Группа: 3210 · Вариант: 12657</h3>
+                </div>
+            </div>
+        </div>
+
+
+        <ul class="links">
+            <li><a href="https://github.com/eag2007">
+                <img src="public/github.png" alt="Ссылка на github" class="pictures">
+            </a></li>
+            <li><a href="https://vk.ru/eag2007">
+                <img src="public/vk.png" alt="Ссылка на вк" class="pictures">
+            </a></li>
+            <li><a href="https://www.google.com">
+                <img src="public/telegramm.webp" alt="Ссылка на telegram" class="pictures">
+            </a></li>
+            <li><a href="https://codeberg.org/eag2007">
+                <img src="public/codeberg.webp" alt="Ссылка на codeberg" class="pictures">
+            </a></li>
+            <li><a href="mailto:eag2007official@gmail.com">
+                <img src="public/email.png" alt="Ссылка на почту" class="pictures">
+            </a></li>
+            <li><a href="https://www.oldgame.cz/ru/prehistorik-2">
+                <img src="public/mogged-hard-prime.png" alt="Ссылка на codeberg" class="pictures">
+            </a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <div class="graphics-coordinates">
+        <div class="blocks graphics">
+            <h2>График</h2>
+            <canvas width="764" height="650" id="canvas">
+            </canvas>
+        </div>
+        <div class="blocks coordinates">
+            <h2>Проверка точки</h2>
+
+            <form id="point-form" method="get">
+                <div class="poles">
+                    <label for="x">Координата X:</label>
+                    <select id="x" name="x">
+                        <option value="-4">-4</option>
+                        <option value="-3">-3</option>
+                        <option value="-2">-2</option>
+                        <option value="-1">-1</option>
+                        <option value="0" selected>0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+
+                <div class="poles">
+                    <label for="y">Координата Y:</label>
+                    <input
+                            type="text"
+                            id="y"
+                            name="y"
+                            placeholder="от -5 до 5"
+                            inputmode="decimal">
+                </div>
+
+                <div class="poles r-field">
+                    <span class="r-title" id="r-title">Значение R:</span>
+
+                    <div class="r-options" role="group" aria-labelledby="r-title">
+                        <label class="r-option">
+                            <input type="checkbox" name="r" value="1" checked>1
+                        </label>
+                        <label class="r-option">
+                            <input type="checkbox" name="r" value="2">2
+                        </label>
+                        <label class="r-option">
+                            <input type="checkbox" name="r" value="3">3
+                        </label>
+                        <label class="r-option">
+                            <input type="checkbox" name="r" value="4">4
+                        </label>
+                        <label class="r-option">
+                            <input type="checkbox" name="r" value="5">5
+                        </label>
+                    </div>
+                </div>
+
+                <div id="logs" role="alert"></div>
+
+                <button type="submit" id="check-button">Проверить</button>
+                <button type="button" id="clear-button">Очистить</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<section>
+    <div class="table">
+        <h3 id="table-name">Таблица результата</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Координата X</th>
+                    <th>Координата Y</th>
+                    <th>Значение R</th>
+                    <th>Состояние</th>
+                    <th id="date-sort" style="cursor: pointer">Время проверки <span id="date-sort-arrow"></span></th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/decimal.js@10/decimal.min.js"></script>
+<script type="module" src="src/js/main.js"></script>
+
+</body>
+
+</html>
