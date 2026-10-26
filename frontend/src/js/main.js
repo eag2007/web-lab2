@@ -72,7 +72,6 @@ const clickCheckButton = () => {
     points.push(point);
 
     savePoints(points);
-    createLine(x, y, r);
     addPointToTable(point);
 
     drawZoomUpdate(zoom);

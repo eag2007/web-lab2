@@ -1,9 +1,16 @@
-package ru.web2;
+package validator;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 
-public class Validator {
-    public static boolean validate(BigDecimal x, BigDecimal y, BigDecimal r) {
+@RestController
+public class ValidatorController {
+
+    @GetMapping("api/validate")
+    public boolean validate(@RequestParam BigDecimal x, @RequestParam BigDecimal y, @RequestParam BigDecimal r) {
         return x.compareTo(BigDecimal.valueOf(-4)) >= 0 && x.compareTo(BigDecimal.valueOf(4)) <= 0 &&
                 x.stripTrailingZeros().scale() <= 0 &&
 
