@@ -13,8 +13,8 @@ public class Main {
     public static void main(String[] args) {
         FCGIInterface fastCGI = new FCGIInterface();
         log("FastCGI начал работу");
-        try {
-            while (fastCGI.FCGIaccept() >= 0) {
+        while (fastCGI.FCGIaccept() >= 0) {
+            try {
                 log("ПОЛУЧЕН ЗАПРОС");
                 String method = System.getProperty("REQUEST_METHOD");
                 String path = System.getProperty("REQUEST_URI");
@@ -31,15 +31,15 @@ public class Main {
                         break;
 
                     case "/api/points/get":
-                        RequestsHandler.point(method, path, query);
-                        break;
-
-                    case "/api/points":
-                        RequestsHandler.points(method, path, query);
+                        RequestsHandler.read(method, path, query);
                         break;
 
                     case "/api/validate":
                         RequestsHandler.validate(method, path, query);
+                        break;
+
+                    case "/api/points/clear":
+                        RequestsHandler.clear(method, path, query);
                         break;
 
                     case null:
@@ -48,9 +48,9 @@ public class Main {
                     default:
                         RequestsHandler.sendResponse(Messages.STATUS_404, "Not Found Page");
                 }
+            } catch (Exception e) {
+                log("Упал с ошибкой " + e.getMessage());
             }
-        } catch (Exception e) {
-            log("Упал с ошибкой " + e.getMessage());
         }
     }
 }

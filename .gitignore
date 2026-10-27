@@ -68,6 +68,10 @@ backend/dist/
 backend/nbdist/
 backend/.nb-gradle/
 
+backend/orchestrator/build
+backend/validator/build
+backend/writer/build
+
 ### VS Code ###
 backend/.vscode/
 

@@ -1,6 +1,6 @@
-import { points, global_r, checkRange } from './points.js';
-import { savePoints } from './storage.js';
+import { points, global_r, fetchCheck } from './points.js';
 import { addPointToTable } from './table.js';
+import { showError, hideError } from "./validation.js";
 
 export const canvas = document.getElementById('canvas');
 
@@ -280,29 +280,34 @@ export const unselectedFromMove = () => {
   isDragging = false;
 };
 
-export const createPoint = (event) => {
-  const rect = canvas.getBoundingClientRect();
+export const createPoint = async (event) => {
+    hideError();
 
-  let x = ((event.clientX - rect.left) * canvas.width) / rect.width;
-  let y = ((event.clientY - rect.top) * canvas.height) / rect.height;
+    const rect = canvas.getBoundingClientRect();
 
-  x = (x - canvas.width / 2 - offsetX) / zoom;
-  y = -(y - canvas.height / 2 - offsetY) / zoom;
+    let x = ((event.clientX - rect.left) * canvas.width) / rect.width;
+    let y = ((event.clientY - rect.top) * canvas.height) / rect.height;
 
-  const xStep = canvas.width / 6;
-  const yStep = canvas.height / 6;
+    x = (x - canvas.width / 2 - offsetX) / zoom;
+    y = -(y - canvas.height / 2 - offsetY) / zoom;
 
-  x = (x / (2 * xStep)) * global_r;
-  y = (y / (2 * yStep)) * global_r;
+    const xStep = canvas.width / 6;
+    const yStep = canvas.height / 6;
 
-  const is_range = checkRange(x, y) ? 'Попала' : 'Не попала';
-  const time = Date.now();
-  const point = [x, y, global_r, is_range, time];
+    x = (x / (2 * xStep)) * global_r;
+    y = (y / (2 * yStep)) * global_r;
 
-  points.push(point);
+    let point;
+    try {
+        point = await fetchCheck(x, y, global_r);
+    } catch (err) {
+        showError(`Точка не добавлена: ${err.message}`);
+        return;
+    }
 
-  savePoints(points);
-  addPointToTable(point);
+    points.push(point);
 
-  drawZoomUpdate(zoom);
+    addPointToTable(point);
+
+    drawZoomUpdate(zoom);
 };

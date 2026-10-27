@@ -1,5 +1,5 @@
-import {points, setGlobalR, checkRange} from './points.js';
-import {savePoints, clearPoints} from './storage.js';
+import {points, setGlobalR, fetchValidate} from './points.js';
+import {loadPoints, clearPoints} from './storage.js';
 import {toDecimal, showError, hideError} from './validation.js';
 import {addPointToTable, clearTable, addToTable} from './table.js';
 
@@ -35,7 +35,7 @@ rCheckboxes.forEach((checkbox) => {
     });
 });
 
-const clickCheckButton = () => {
+const clickCheckButton = async () => {
     hideError();
 
     const x = parseInt(document.getElementById('x')?.value);
@@ -65,26 +65,33 @@ const clickCheckButton = () => {
 
     setGlobalR(r);
 
-    const tmp = Date.now();
-    const is_range = checkRange(x, y) ? 'Попала' : 'Не попала';
-    const point = [x, y, r, is_range, tmp];
+    let point;
+    try {
+        point = await fetchValidate(x, y.toString(), r);
+    } catch (err) {
+        showError(`Точка не добавлена: ${err.message}`);
+        return;
+    }
 
     points.push(point);
 
-    savePoints(points);
     addPointToTable(point);
 
     drawZoomUpdate(zoom);
 };
 
-const clickClearButton = () => {
+const clickClearButton = async () => {
     hideError();
 
+    try {
+        await clearPoints();
+    } catch (err) {
+        showError(`Сервер недоступен, точки не удалены: ${err.message}`);
+        return;
+    }
+
     points.length = 0;
-
-    clearPoints();
     clearTable();
-
     drawZoomUpdate(zoom);
 };
 
@@ -101,5 +108,15 @@ document.getElementById('point-form').addEventListener('submit', (event) => {
     clickCheckButton();
 });
 
-addToTable();
-drawZoomUpdate(zoom);
+const loadFromServer = async () => {
+    try {
+        points.push(...await loadPoints());
+    } catch (err) {
+        showError(`Сервер недоступен, точки не загружены: ${err.message}`);
+    }
+
+    addToTable();
+    drawZoomUpdate(zoom);
+};
+
+loadFromServer();
