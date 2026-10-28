@@ -94,12 +94,42 @@ Lab2/
 │   ├── libs/fastcgi-lib.jar
 │   ├── orchestrator/         # FastCGI-сервер
 │   ├── validator/            # Spring, :7001
-│   └── writer/               # Spring, :7002, Redis
+│   ├── writer/               # Spring, :7002, Redis
+│   └── Dockerfile            # сборка и образы для трёх Java-сервисов
+├── compose.yaml              # запуск всех контейнеров
 └── deploy/
-    └── orchestrator.conf     # конфиг Apache httpd (порт 8888)
+    ├── web/                  # Dockerfile и httpd.conf для контейнера web
+    └── orchestrator.conf     # конфиг локального Apache httpd (запуск без Docker)
 ```
 
-## Сборка и запуск
+## Запуск в Docker
+
+Всё приложение запускается одной командой (нужны Docker и Docker Compose):
+
+```bash
+docker compose up --build -d
+```
+
+Приложение откроется на `http://localhost:8888/`. Если порт занят, задайте другой: `WEB_PORT=8080 docker compose up --build -d`.
+
+| Контейнер | Образ | Назначение |
+|-----------|-------|------------|
+| `web` | `httpd:2.4-alpine` | Apache: статика из `frontend/`, `/api/` проксируется на FastCGI |
+| `orchestrator` | Java 25 | FastCGI-сервер, порт 24001 |
+| `validator` | Java 25 | Spring, порт 7001 |
+| `writer` | Java 25 | Spring, порт 7002 |
+| `redis` | `redis:7-alpine` | Хранилище точек (том `redis-data`) |
+
+Наружу открыт только порт `web`, остальные контейнеры видят друг друга по именам. Адреса сервисов передаются через переменные окружения (`VALIDATOR_URL`, `WRITER_URL`, `SPRING_DATA_REDIS_HOST`), заданные в `compose.yaml`.
+
+```bash
+docker compose logs -f     # логи
+docker compose down        # остановить (точки в Redis сохраняются)
+docker compose down -v     # остановить и удалить точки
+```
+
+## Запуск без Docker
+
 
 Сборка backend (нужна Java 25):
 

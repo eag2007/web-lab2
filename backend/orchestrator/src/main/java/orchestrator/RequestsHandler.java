@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 public class RequestsHandler {
 
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
+    private static final String VALIDATOR = System.getenv().getOrDefault("VALIDATOR_URL", "http://localhost:7001");
+    private static final String WRITER    = System.getenv().getOrDefault("WRITER_URL",    "http://localhost:7002");
 
     public static void check(String method, String path, String query) throws IOException, InterruptedException {
         long start = System.nanoTime();
@@ -51,8 +53,8 @@ public class RequestsHandler {
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("http://localhost:7001/api/validate?x=%s&y=%s&r=%s",
-                        x.toPlainString(), y.toPlainString(), r.toPlainString())))
+                .uri(URI.create(String.format("%s/api/validate?x=%s&y=%s&r=%s",
+                        VALIDATOR, x.toPlainString(), y.toPlainString(), r.toPlainString())))
                 .GET()
                 .build();
 
@@ -76,7 +78,7 @@ public class RequestsHandler {
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:7002/read"))
+                .uri(URI.create(WRITER + "/read"))
                 .GET()
                 .build();
 
@@ -96,7 +98,7 @@ public class RequestsHandler {
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:7002/clear"))
+                .uri(URI.create(WRITER + "/clear"))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -111,8 +113,8 @@ public class RequestsHandler {
 
     private static void checkAndWrite(BigDecimal x, BigDecimal y, BigDecimal r, long start) throws IOException, InterruptedException {
         HttpRequest checkRequest = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("http://localhost:7001/api/check?x=%s&y=%s&global_r=%s",
-                        x.toPlainString(), y.toPlainString(), r.toPlainString())))
+                .uri(URI.create(String.format("%s/api/check?x=%s&y=%s&global_r=%s",
+                        VALIDATOR, x.toPlainString(), y.toPlainString(), r.toPlainString())))
                 .GET()
                 .build();
 
@@ -130,7 +132,7 @@ public class RequestsHandler {
                 checkResponse.body().trim(), System.currentTimeMillis(), executionMicros);
 
         HttpRequest writeRequest = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:7002/write"))
+                .uri(URI.create(WRITER + "/write"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(point))
                 .build();

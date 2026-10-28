@@ -1,0 +1,42 @@
+services:
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+
+  validator:
+    build:
+      context: backend
+      target: validator
+
+  writer:
+    build:
+      context: backend
+      target: writer
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      - redis
+
+  orchestrator:
+    build:
+      context: backend
+      target: orchestrator
+    environment:
+      VALIDATOR_URL: http://validator:7001
+      WRITER_URL: http://writer:7002
+    depends_on:
+      - validator
+      - writer
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web/Dockerfile
+    ports:
+      - "${WEB_PORT:-8888}:80"
+    depends_on:
+      - orchestrator
+
+volumes:
+  redis-data:
