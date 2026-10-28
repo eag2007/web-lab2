@@ -23,6 +23,11 @@ public class Main {
 
                 if (path != null) {
                     path = path.split("\\?", 2)[0];
+
+                    int apiIndex = path.indexOf("/api/");
+                    if (apiIndex > 0) {
+                        path = path.substring(apiIndex);
+                    }
                 }
 
                 switch (path) {
@@ -43,6 +48,7 @@ public class Main {
                         break;
 
                     case null:
+                        RequestsHandler.sendResponse(Messages.STATUS_400, "Некорректный запрос");
                         break;
 
                     default:
@@ -50,6 +56,7 @@ public class Main {
                 }
             } catch (Exception e) {
                 log("Упал с ошибкой " + e.getMessage());
+                RequestsHandler.sendResponse(Messages.STATUS_500, "Внутренняя ошибка сервера: " + e.getMessage());
             }
         }
     }

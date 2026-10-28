@@ -14,6 +14,8 @@ public class RequestsHandler {
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     public static void check(String method, String path, String query) throws IOException, InterruptedException {
+        long start = System.nanoTime();
+
         if (!"GET".equals(method)) {
             sendResponse(Messages.STATUS_405, "");
             return;
@@ -28,10 +30,12 @@ public class RequestsHandler {
             return;
         }
 
-        checkAndWrite(x, y, r);
+        checkAndWrite(x, y, r, start);
     }
 
     public static void validate(String method, String path, String query) throws IOException, InterruptedException {
+        long start = System.nanoTime();
+
         if (!"GET".equals(method)) {
             sendResponse(Messages.STATUS_405, "");
             return;
@@ -62,7 +66,7 @@ public class RequestsHandler {
             return;
         }
 
-        checkAndWrite(x, y, r);
+        checkAndWrite(x, y, r, start);
     }
 
     public static void read(String method, String path, String query) throws IOException, InterruptedException {
@@ -79,10 +83,10 @@ public class RequestsHandler {
         HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            sendResponse(Messages.STATUS_500, "Writer error");
+            sendResponse(Messages.STATUS_500, "Ошибка записи");
             return;
         }
-        sendResponse(Messages.STATUS_200, response.body());
+        sendJson(response.body());
     }
 
     public static void clear(String method, String path, String query) throws IOException, InterruptedException {
@@ -99,13 +103,13 @@ public class RequestsHandler {
         HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            sendResponse(Messages.STATUS_500, "Writer error");
+            sendResponse(Messages.STATUS_500, "Ошибка записи");
             return;
         }
         sendResponse(Messages.STATUS_200, "OK");
     }
 
-    private static void checkAndWrite(BigDecimal x, BigDecimal y, BigDecimal r) throws IOException, InterruptedException {
+    private static void checkAndWrite(BigDecimal x, BigDecimal y, BigDecimal r, long start) throws IOException, InterruptedException {
         HttpRequest checkRequest = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("http://localhost:7001/api/check?x=%s&y=%s&global_r=%s",
                         x.toPlainString(), y.toPlainString(), r.toPlainString())))
@@ -115,13 +119,15 @@ public class RequestsHandler {
         HttpResponse<String> checkResponse = CLIENT.send(checkRequest, HttpResponse.BodyHandlers.ofString());
 
         if (checkResponse.statusCode() != 200) {
-            sendResponse(Messages.STATUS_500, "Validator error");
+            sendResponse(Messages.STATUS_500, "Точки не совпадают с диапазоном");
             return;
         }
 
-        String point = String.format("[%s,%s,%s,\"%s\",%d]",
+        long executionMicros = (System.nanoTime() - start) / 1000;
+
+        String point = String.format("[%s,%s,%s,\"%s\",%d,%d]",
                 x.toPlainString(), y.toPlainString(), r.toPlainString(),
-                checkResponse.body().trim(), System.currentTimeMillis());
+                checkResponse.body().trim(), System.currentTimeMillis(), executionMicros);
 
         HttpRequest writeRequest = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:7002/write"))
@@ -135,7 +141,7 @@ public class RequestsHandler {
             sendResponse(Messages.STATUS_500, "Writer error");
             return;
         }
-        sendResponse(Messages.STATUS_200, point);
+        sendJson(point);
     }
 
     private static String param(String query, String name) {
@@ -160,11 +166,19 @@ public class RequestsHandler {
         }
     }
 
+    public static void sendJson(String json) {
+        send(Messages.STATUS_200, "application/json", json);
+    }
+
     public static void sendResponse(Messages message, String description) {
+        send(message, "text/plain", description);
+    }
+
+    private static void send(Messages message, String contentType, String body) {
         System.out.print(message);
         System.out.print("Access-Control-Allow-Origin: *\r\n");
-        System.out.print("Content-Type: text/plain; charset=UTF-8\r\n\r\n");
-        System.out.print(description);
+        System.out.print("Content-Type: " + contentType + "; charset=UTF-8\r\n\r\n");
+        System.out.print(body);
         System.out.flush();
     }
 }

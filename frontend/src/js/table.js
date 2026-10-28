@@ -15,7 +15,7 @@ dateHeader.addEventListener('click', () => {
 });
 
 export const addPointToTable = (point) => {
-  const [x, y, r, is_range, timestamp] = point;
+  const [x, y, r, is_range, timestamp, executionMicros] = point;
   const time = new Date(timestamp).toLocaleString('ru-RU');
 
   value_table.innerHTML += `<tr>
@@ -24,6 +24,7 @@ export const addPointToTable = (point) => {
                               <td>${r}</td>
                               <td>${is_range}</td>
                               <td>${time}</td>
+                              <td>${executionMicros ?? '—'}</td>
                            </tr>`;
 };
 
@@ -32,15 +33,5 @@ export const clearTable = () => {
 };
 
 export const addToTable = () => {
-  for (const i of points) {
-    const time = new Date(i[4]).toLocaleString('ru-RU');
-
-    value_table.innerHTML += `<tr>
-                                <td>${i[0]}</td>
-                                <td>${i[1]}</td>
-                                <td>${i[2]}</td>
-                                <td>${i[3]}</td>
-                                <td>${time}</td>
-                             </tr>`;
-  }
+  points.forEach(addPointToTable);
 };

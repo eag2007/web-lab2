@@ -44,12 +44,12 @@ const clickCheckButton = async () => {
     const r = selectedR ? Number(selectedR.value) : null;
 
     if (y == null) {
-        showError('Координата Y не соответсвует числу');
+        showError('Координата Y не соответствует числу');
         return;
     }
 
     if (r == null) {
-        showError('Значение R не соответсвует числу');
+        showError('Значение R не соответствует числу');
         return;
     }
 

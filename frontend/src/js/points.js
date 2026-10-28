@@ -12,7 +12,7 @@ export const fetchCheck = async (x, y, r) => {
     global_r: r.toString(),
   });
 
-  const response = await fetch(`http://localhost:8888/api/check?${params}`);
+  const response = await fetch(`api/check?${params}`);
 
   if (!response.ok) {
     throw new Error(`Статус ${response.status}`);
@@ -28,7 +28,7 @@ export const fetchValidate = async (x, y, r) => {
     r: r.toString(),
   });
 
-  const response = await fetch(`http://localhost:8888/api/validate?${params}`);
+  const response = await fetch(`api/validate?${params}`);
 
   if (!response.ok) {
     throw new Error(`Статус ${response.status}`);
