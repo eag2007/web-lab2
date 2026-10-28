@@ -122,11 +122,45 @@ docker compose up --build -d
 
 Наружу открыт только порт `web`, остальные контейнеры видят друг друга по именам. Адреса сервисов передаются через переменные окружения (`VALIDATOR_URL`, `WRITER_URL`, `SPRING_DATA_REDIS_HOST`), заданные в `compose.yaml`.
 
+### Требования
+
+- Docker (проверка: `docker --version`);
+- Docker Compose v2 (проверка: `docker compose version`).
+
+Java, Gradle, Redis и Apache на машине ставить не нужно: сборка идёт внутри контейнеров. Все команды выполняются из корня проекта (там, где лежит `compose.yaml`).
+
+### Первый запуск
+
 ```bash
-docker compose logs -f     # логи
-docker compose down        # остановить (точки в Redis сохраняются)
-docker compose down -v     # остановить и удалить точки
+docker compose up --build -d
 ```
+
+Первая сборка занимает несколько минут: скачиваются образы и зависимости Gradle. Флаг `-d` запускает контейнеры в фоне. После запуска откройте `http://localhost:8888/`.
+
+### Управление
+
+| Задача | Команда |
+|--------|---------|
+| Запустить (образы уже собраны) | `docker compose up -d` |
+| Пересобрать и запустить после изменений в коде | `docker compose up --build -d` |
+| Пересобрать один сервис | `docker compose up --build -d writer` |
+| Статус контейнеров | `docker compose ps` |
+| Логи всех сервисов | `docker compose logs -f` |
+| Логи одного сервиса | `docker compose logs -f orchestrator` |
+| Перезапустить сервис | `docker compose restart writer` |
+| Остановить, не удаляя контейнеры | `docker compose stop` |
+| Запустить после `stop` | `docker compose start` |
+| Остановить и удалить контейнеры и сеть (точки в Redis сохраняются) | `docker compose down` |
+| Остановить и дополнительно удалить точки (том `redis-data`) | `docker compose down -v` |
+| Удалить ещё и собранные образы | `docker compose down -v --rmi local` |
+
+Изменения во `frontend/` тоже требуют пересборки (`docker compose up --build -d web`): файлы копируются в образ при сборке, а не подключаются из папки.
+
+### Если что-то не работает
+
+- **Порт 8888 занят.** Запустите на другом порту: `WEB_PORT=8080 docker compose up --build -d`.
+- **Страница открывается, но запросы к API падают с ошибкой 500.** Проверьте, что все контейнеры работают (`docker compose ps`), и посмотрите логи: `docker compose logs validator writer orchestrator`.
+- **Нужно начать с чистого состояния.** Выполните `docker compose down -v`, затем `docker compose up --build -d`.
 
 ## Запуск без Docker
 
