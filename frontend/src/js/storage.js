@@ -2,7 +2,7 @@ export const loadPoints = async () => {
   const response = await fetch('api/points/get');
 
   if (!response.ok) {
-    throw new Error(`Статус ${response.status}`);
+    throw new Error((await response.text()) || `Статус ${response.status}`);
   }
 
   return await response.json();
@@ -14,6 +14,6 @@ export const clearPoints = async () => {
   });
 
   if (!response.ok) {
-    throw new Error(`Статус ${response.status}`);
+    throw new Error((await response.text()) || `Статус ${response.status}`);
   }
 };

@@ -15,7 +15,7 @@ export const fetchCheck = async (x, y, r) => {
   const response = await fetch(`api/check?${params}`);
 
   if (!response.ok) {
-    throw new Error(`Статус ${response.status}`);
+    throw new Error((await response.text()) || `Статус ${response.status}`);
   }
 
   return await response.json();
@@ -31,7 +31,7 @@ export const fetchValidate = async (x, y, r) => {
   const response = await fetch(`api/validate?${params}`);
 
   if (!response.ok) {
-    throw new Error(`Статус ${response.status}`);
+    throw new Error((await response.text()) || `Статус ${response.status}`);
   }
 
   return await response.json();

@@ -8,10 +8,14 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 public class RequestsHandler {
 
-    private static final HttpClient CLIENT = HttpClient.newHttpClient();
+    private static final HttpClient CLIENT = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(2))
+            .build();
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(5);
     private static final String VALIDATOR = System.getenv().getOrDefault("VALIDATOR_URL", "http://localhost:7001");
     private static final String WRITER    = System.getenv().getOrDefault("WRITER_URL",    "http://localhost:7002");
 
@@ -55,13 +59,11 @@ public class RequestsHandler {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/api/validate?x=%s&y=%s&r=%s",
                         VALIDATOR, x.toPlainString(), y.toPlainString(), r.toPlainString())))
+                .timeout(REQUEST_TIMEOUT)
                 .GET()
                 .build();
 
-        HttpResponse<String> response = CLIENT.send(
-                request,
-                HttpResponse.BodyHandlers.ofString()
-        );
+        HttpResponse<String> response = call("validator", request);
 
         if (!response.body().trim().equals("true")) {
             sendResponse(Messages.STATUS_400, "Данные не прошли валидацию");
@@ -79,10 +81,11 @@ public class RequestsHandler {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(WRITER + "/read"))
+                .timeout(REQUEST_TIMEOUT)
                 .GET()
                 .build();
 
-        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = call("writer", request);
 
         if (response.statusCode() != 200) {
             sendResponse(Messages.STATUS_500, "Ошибка записи");
@@ -99,10 +102,11 @@ public class RequestsHandler {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(WRITER + "/clear"))
+                .timeout(REQUEST_TIMEOUT)
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
-        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = call("writer", request);
 
         if (response.statusCode() != 200) {
             sendResponse(Messages.STATUS_500, "Ошибка записи");
@@ -115,10 +119,11 @@ public class RequestsHandler {
         HttpRequest checkRequest = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/api/check?x=%s&y=%s&global_r=%s",
                         VALIDATOR, x.toPlainString(), y.toPlainString(), r.toPlainString())))
+                .timeout(REQUEST_TIMEOUT)
                 .GET()
                 .build();
 
-        HttpResponse<String> checkResponse = CLIENT.send(checkRequest, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> checkResponse = call("validator", checkRequest);
 
         if (checkResponse.statusCode() != 200) {
             sendResponse(Messages.STATUS_500, "Точки не совпадают с диапазоном");
@@ -134,16 +139,31 @@ public class RequestsHandler {
         HttpRequest writeRequest = HttpRequest.newBuilder()
                 .uri(URI.create(WRITER + "/write"))
                 .header("Content-Type", "application/json")
+                .timeout(REQUEST_TIMEOUT)
                 .POST(HttpRequest.BodyPublishers.ofString(point))
                 .build();
 
-        HttpResponse<String> writeResponse = CLIENT.send(writeRequest, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> writeResponse = call("writer", writeRequest);
 
         if (writeResponse.statusCode() != 200) {
             sendResponse(Messages.STATUS_500, "Writer error");
             return;
         }
         sendJson(point);
+    }
+
+    private static HttpResponse<String> call(String service, HttpRequest request) throws InterruptedException {
+        try {
+            return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            throw new ServiceUnavailableException(service);
+        }
+    }
+
+    public static class ServiceUnavailableException extends RuntimeException {
+        public ServiceUnavailableException(String service) {
+            super("Сервис " + service + " временно недоступен");
+        }
     }
 
     private static String param(String query, String name) {

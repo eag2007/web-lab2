@@ -6,6 +6,7 @@ public enum Messages {
     STATUS_404("Status: 404 Not Found\r\n"),
     STATUS_405("Status: 405 Method Not Allowed\r\nAllow: GET, POST\r\n"),
     STATUS_500("Status: 500 Internal Server Error\r\n"),
+    STATUS_503("Status: 503 Service Unavailable\r\n"),
     CONTENT_TYPE("Content-Type: application/json; charset=UTF-8\r\n\r\n");
 
     private final String message;

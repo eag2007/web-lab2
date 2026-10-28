@@ -54,6 +54,9 @@ public class Main {
                     default:
                         RequestsHandler.sendResponse(Messages.STATUS_404, "Not Found Page");
                 }
+            } catch (RequestsHandler.ServiceUnavailableException e) {
+                log(e.getMessage());
+                RequestsHandler.sendResponse(Messages.STATUS_503, e.getMessage());
             } catch (Exception e) {
                 log("Упал с ошибкой " + e.getMessage());
                 RequestsHandler.sendResponse(Messages.STATUS_500, "Внутренняя ошибка сервера: " + e.getMessage());
